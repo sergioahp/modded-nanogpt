@@ -139,19 +139,16 @@ def main():
         # Get all unique runs for this speedrun
         run_ids = speedrun_data['run_id'].unique()
 
-        for run_id in run_ids:
+        for j, run_id in enumerate(run_ids):
             run_data = speedrun_data[speedrun_data['run_id'] == run_id].sort_values('step')
+            # Add label only to first run of each speedrun for legend
+            label = speedrun if j == 0 else None
             ax.plot(run_data['step'], run_data['val_loss'],
-                   color=colors[i], alpha=0.25, linewidth=0.5)
-
-        # Plot mean curve for this speedrun (darker, thicker)
-        mean_curve = speedrun_data.groupby('step')['val_loss'].mean().reset_index()
-        ax.plot(mean_curve['step'], mean_curve['val_loss'],
-               color=colors[i], linewidth=2, label=speedrun, alpha=0.9)
+                   color=colors[i], alpha=0.25, linewidth=0.5, label=label)
 
     ax.set_xlabel('Training Step', fontsize=12)
     ax.set_ylabel('Validation Loss', fontsize=12)
-    ax.set_title('Step vs Loss Curves for 10 Latest Speed Runs\n(Individual runs in light color, mean in bold)',
+    ax.set_title('Step vs Loss Curves for 10 Latest Speed Runs\n(All individual runs shown)',
                  fontsize=14, pad=20)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     ax.grid(True, alpha=0.3)
@@ -176,23 +173,18 @@ def main():
         # Get all unique runs for this speedrun
         run_ids = speedrun_data['run_id'].unique()
 
-        for run_id in run_ids:
+        for j, run_id in enumerate(run_ids):
             run_data = speedrun_data[speedrun_data['run_id'] == run_id].sort_values('step')
             run_data_zoom = run_data[run_data['step'] >= min_step_zoom]
             if len(run_data_zoom) > 0:
+                # Add label only to first run of each speedrun for legend
+                label = speedrun if j == 0 else None
                 ax.plot(run_data_zoom['step'], run_data_zoom['val_loss'],
-                       color=colors[i], alpha=0.25, linewidth=0.5)
-
-        # Plot mean curve for this speedrun (darker, thicker)
-        mean_curve = speedrun_data.groupby('step')['val_loss'].mean().reset_index()
-        mean_curve_zoom = mean_curve[mean_curve['step'] >= min_step_zoom]
-        if len(mean_curve_zoom) > 0:
-            ax.plot(mean_curve_zoom['step'], mean_curve_zoom['val_loss'],
-                   color=colors[i], linewidth=2, label=speedrun, alpha=0.9)
+                       color=colors[i], alpha=0.25, linewidth=0.5, label=label)
 
     ax.set_xlabel('Training Step', fontsize=12)
     ax.set_ylabel('Validation Loss', fontsize=12)
-    ax.set_title('Step vs Loss Curves - Last 50% of Training\n(Individual runs in light color, mean in bold)',
+    ax.set_title('Step vs Loss Curves - Last 50% of Training\n(All individual runs shown)',
                  fontsize=14, pad=20)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     ax.grid(True, alpha=0.3)
