@@ -162,9 +162,10 @@ def main():
     # Plot 2: Zoomed to last 50% of steps
     fig, ax = plt.subplots(figsize=(14, 8))
 
-    # Find the midpoint step (50% mark)
-    max_step = df['step'].max()
-    min_step_zoom = max_step * 0.5
+    # Find the midpoint step (50% mark) using 75th percentile to ignore outlier long runs
+    final_steps_per_speedrun = df.groupby('speedrun')['step'].max()
+    typical_max_step = final_steps_per_speedrun.quantile(0.75)
+    min_step_zoom = typical_max_step * 0.5
 
     # Plot each run (only last 50% of data)
     for i, speedrun in enumerate(speedruns):
@@ -188,6 +189,8 @@ def main():
                  fontsize=14, pad=20)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     ax.grid(True, alpha=0.3)
+    # Set x-axis limits to focus on typical runs (ignore outlier long runs)
+    ax.set_xlim(min_step_zoom, typical_max_step * 1.1)
 
     plt.tight_layout()
     output_plot_zoom = "/home/user/modded-nanogpt/speedrun_plot_zoomed.png"
