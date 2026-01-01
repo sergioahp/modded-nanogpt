@@ -13,7 +13,7 @@ from datetime import datetime
 # Find all speed run directories
 RECORDS_DIR = Path("/home/user/modded-nanogpt/records")
 
-def get_latest_speedruns(n=10):
+def get_latest_speedruns(n=15):
     """Get the n latest speed run directories"""
     speedrun_dirs = []
 
@@ -88,8 +88,8 @@ def get_commit_info(speedrun_dir):
 def main():
     print("Loading speed run data...")
 
-    # Get 10 latest speed runs
-    latest_speedruns = get_latest_speedruns(10)
+    # Get 15 latest speed runs
+    latest_speedruns = get_latest_speedruns(15)
 
     print(f"\nFound {len(latest_speedruns)} latest speed runs:")
     for i, sr in enumerate(latest_speedruns):
@@ -127,7 +127,7 @@ def main():
 
     # Get unique speedruns and assign colors
     speedruns = df['speedrun'].unique()
-    colors = plt.cm.tab10(np.linspace(0, 1, len(speedruns)))
+    colors = plt.cm.tab20(np.linspace(0, 1, len(speedruns)))
 
     # Plot 1: Full view
     fig, ax = plt.subplots(figsize=(14, 8))
@@ -144,11 +144,11 @@ def main():
             # Add label only to first run of each speedrun for legend
             label = speedrun if j == 0 else None
             ax.plot(run_data['step'], run_data['val_loss'],
-                   color=colors[i], alpha=0.25, linewidth=0.5, label=label)
+                   color=colors[i], alpha=0.25, linewidth=0.8, label=label)
 
     ax.set_xlabel('Training Step', fontsize=12)
     ax.set_ylabel('Validation Loss', fontsize=12)
-    ax.set_title('Step vs Loss Curves for 10 Latest Speed Runs\n(All individual runs shown)',
+    ax.set_title('Step vs Loss Curves for 15 Latest Speed Runs\n(All individual runs shown)',
                  fontsize=14, pad=20)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     ax.grid(True, alpha=0.3)
@@ -180,7 +180,7 @@ def main():
                 # Add label only to first run of each speedrun for legend
                 label = speedrun if j == 0 else None
                 ax.plot(run_data_zoom['step'], run_data_zoom['val_loss'],
-                       color=colors[i], alpha=0.25, linewidth=0.5, label=label)
+                       color=colors[i], alpha=0.25, linewidth=0.8, label=label)
 
     ax.set_xlabel('Training Step', fontsize=12)
     ax.set_ylabel('Validation Loss', fontsize=12)
