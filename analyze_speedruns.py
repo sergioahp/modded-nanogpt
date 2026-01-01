@@ -120,16 +120,17 @@ def main():
     df.to_csv(output_csv, index=False)
     print(f"\nDataFrame saved to: {output_csv}")
 
-    # Create plot
+    # Create plots
     print(f"\n{'='*80}")
-    print("CREATING PLOT")
+    print("CREATING PLOTS")
     print(f"{'='*80}")
-
-    fig, ax = plt.subplots(figsize=(14, 8))
 
     # Get unique speedruns and assign colors
     speedruns = df['speedrun'].unique()
     colors = plt.cm.tab10(np.linspace(0, 1, len(speedruns)))
+
+    # Plot 1: Full view
+    fig, ax = plt.subplots(figsize=(14, 8))
 
     # Plot each run
     for i, speedrun in enumerate(speedruns):
@@ -141,7 +142,7 @@ def main():
         for run_id in run_ids:
             run_data = speedrun_data[speedrun_data['run_id'] == run_id].sort_values('step')
             ax.plot(run_data['step'], run_data['val_loss'],
-                   color=colors[i], alpha=0.4, linewidth=1)
+                   color=colors[i], alpha=0.25, linewidth=0.5)
 
         # Plot mean curve for this speedrun (darker, thicker)
         mean_curve = speedrun_data.groupby('step')['val_loss'].mean().reset_index()
@@ -158,7 +159,49 @@ def main():
     plt.tight_layout()
     output_plot = "/home/user/modded-nanogpt/speedrun_plot.png"
     plt.savefig(output_plot, dpi=150, bbox_inches='tight')
-    print(f"Plot saved to: {output_plot}")
+    print(f"Full plot saved to: {output_plot}")
+    plt.close()
+
+    # Plot 2: Zoomed to last 50% of steps
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    # Find the midpoint step (50% mark)
+    max_step = df['step'].max()
+    min_step_zoom = max_step * 0.5
+
+    # Plot each run (only last 50% of data)
+    for i, speedrun in enumerate(speedruns):
+        speedrun_data = df[df['speedrun'] == speedrun]
+
+        # Get all unique runs for this speedrun
+        run_ids = speedrun_data['run_id'].unique()
+
+        for run_id in run_ids:
+            run_data = speedrun_data[speedrun_data['run_id'] == run_id].sort_values('step')
+            run_data_zoom = run_data[run_data['step'] >= min_step_zoom]
+            if len(run_data_zoom) > 0:
+                ax.plot(run_data_zoom['step'], run_data_zoom['val_loss'],
+                       color=colors[i], alpha=0.25, linewidth=0.5)
+
+        # Plot mean curve for this speedrun (darker, thicker)
+        mean_curve = speedrun_data.groupby('step')['val_loss'].mean().reset_index()
+        mean_curve_zoom = mean_curve[mean_curve['step'] >= min_step_zoom]
+        if len(mean_curve_zoom) > 0:
+            ax.plot(mean_curve_zoom['step'], mean_curve_zoom['val_loss'],
+                   color=colors[i], linewidth=2, label=speedrun, alpha=0.9)
+
+    ax.set_xlabel('Training Step', fontsize=12)
+    ax.set_ylabel('Validation Loss', fontsize=12)
+    ax.set_title('Step vs Loss Curves - Last 50% of Training\n(Individual runs in light color, mean in bold)',
+                 fontsize=14, pad=20)
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+    ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    output_plot_zoom = "/home/user/modded-nanogpt/speedrun_plot_zoomed.png"
+    plt.savefig(output_plot_zoom, dpi=150, bbox_inches='tight')
+    print(f"Zoomed plot (last 50%) saved to: {output_plot_zoom}")
+    plt.close()
 
     # Calculate variance statistics
     print(f"\n{'='*80}")
