@@ -168,7 +168,7 @@ def main():
     typical_max_step = final_steps_per_speedrun.quantile(0.75)
     min_step_zoom = typical_max_step * 0.7  # Start at 70% instead of 50%
 
-    # Plot each run (only last 50% of data)
+    # Plot each run (plot full data, zoom with axis limits)
     for i, speedrun in enumerate(speedruns):
         speedrun_data = df[df['speedrun'] == speedrun]
 
@@ -177,12 +177,10 @@ def main():
 
         for j, run_id in enumerate(run_ids):
             run_data = speedrun_data[speedrun_data['run_id'] == run_id].sort_values('step')
-            run_data_zoom = run_data[run_data['step'] >= min_step_zoom]
-            if len(run_data_zoom) > 0:
-                # Add label only to first run of each speedrun for legend
-                label = speedrun if j == 0 else None
-                ax.plot(run_data_zoom['step'], run_data_zoom['val_loss'],
-                       color=colors[i], alpha=0.25, linewidth=1.2, label=label)
+            # Add label only to first run of each speedrun for legend
+            label = speedrun if j == 0 else None
+            ax.plot(run_data['step'], run_data['val_loss'],
+                   color=colors[i], alpha=0.25, linewidth=1.2, label=label)
 
     ax.set_xlabel('Training Step', fontsize=12)
     ax.set_ylabel('Validation Loss', fontsize=12)
