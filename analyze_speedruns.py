@@ -152,6 +152,11 @@ def main():
                  fontsize=14, pad=20)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     ax.grid(True, alpha=0.3)
+    # Limit x-axis to focus on typical speedruns (ignore very long outliers)
+    final_steps_per_speedrun_full = df.groupby('speedrun')['step'].max()
+    typical_max_step_full = final_steps_per_speedrun_full.quantile(0.75)
+    ax.set_xlim(0, typical_max_step_full * 1.1)
+    ax.set_ylim(3.0, 11)
 
     plt.tight_layout()
     output_plot = "/home/user/modded-nanogpt/speedrun_plot.png"
