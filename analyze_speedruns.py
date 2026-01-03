@@ -162,10 +162,11 @@ def main():
     # Plot 2: Zoomed to last 50% of steps
     fig, ax = plt.subplots(figsize=(14, 8))
 
-    # Find the midpoint step (50% mark) using 75th percentile to ignore outlier long runs
+    # Find the zoom range using 75th percentile to ignore outlier long runs
+    # Focus on the final critical portion (last ~30% to end)
     final_steps_per_speedrun = df.groupby('speedrun')['step'].max()
     typical_max_step = final_steps_per_speedrun.quantile(0.75)
-    min_step_zoom = typical_max_step * 0.5
+    min_step_zoom = typical_max_step * 0.7  # Start at 70% instead of 50%
 
     # Plot each run (only last 50% of data)
     for i, speedrun in enumerate(speedruns):
@@ -181,16 +182,18 @@ def main():
                 # Add label only to first run of each speedrun for legend
                 label = speedrun if j == 0 else None
                 ax.plot(run_data_zoom['step'], run_data_zoom['val_loss'],
-                       color=colors[i], alpha=0.25, linewidth=0.8, label=label)
+                       color=colors[i], alpha=0.25, linewidth=1.2, label=label)
 
     ax.set_xlabel('Training Step', fontsize=12)
     ax.set_ylabel('Validation Loss', fontsize=12)
-    ax.set_title('Step vs Loss Curves - Last 50% of Training\n(All individual runs shown)',
+    ax.set_title('Step vs Loss Curves - Last 30% of Training (Zoomed)\n(All individual runs shown)',
                  fontsize=14, pad=20)
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
     ax.grid(True, alpha=0.3)
     # Set x-axis limits to focus on typical runs (ignore outlier long runs)
-    ax.set_xlim(min_step_zoom, typical_max_step * 1.1)
+    ax.set_xlim(min_step_zoom, typical_max_step * 1.05)
+    # Set y-axis limits to focus on the critical convergence region
+    ax.set_ylim(3.27, 3.46)
 
     plt.tight_layout()
     output_plot_zoom = "/home/user/modded-nanogpt/speedrun_plot_zoomed.png"
