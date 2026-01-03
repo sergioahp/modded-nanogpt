@@ -88,8 +88,8 @@ def get_commit_info(speedrun_dir):
 def main():
     print("Loading speed run data...")
 
-    # Get 10 latest speed runs
-    latest_speedruns = get_latest_speedruns(10)
+    # Get 15 latest speed runs
+    latest_speedruns = get_latest_speedruns(15)
 
     print(f"\nFound {len(latest_speedruns)} latest speed runs:")
     for i, sr in enumerate(latest_speedruns):
@@ -202,6 +202,83 @@ def main():
     output_plot_zoom = "/home/user/modded-nanogpt/speedrun_plot_zoomed.png"
     plt.savefig(output_plot_zoom, dpi=150, bbox_inches='tight')
     print(f"Zoomed plot (last 50%) saved to: {output_plot_zoom}")
+    plt.close()
+
+    # Plot 3: Full view - Latest 10 speedruns only
+    # Get only the 10 most recent speedruns
+    speedruns_top10 = speedruns[:10] if len(speedruns) >= 10 else speedruns
+    df_top10 = df[df['speedrun'].isin(speedruns_top10)]
+    colors_top10 = plt.cm.tab10(np.linspace(0, 1, len(speedruns_top10)))
+
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    # Plot each run for top 10 speedruns
+    for i, speedrun in enumerate(speedruns_top10):
+        speedrun_data = df_top10[df_top10['speedrun'] == speedrun]
+
+        # Get all unique runs for this speedrun
+        run_ids = speedrun_data['run_id'].unique()
+
+        for j, run_id in enumerate(run_ids):
+            run_data = speedrun_data[speedrun_data['run_id'] == run_id].sort_values('step')
+            # Add label only to first run of each speedrun for legend
+            label = speedrun if j == 0 else None
+            ax.plot(run_data['step'], run_data['val_loss'],
+                   color=colors_top10[i], alpha=0.25, linewidth=0.8, label=label)
+
+    ax.set_xlabel('Training Step', fontsize=12)
+    ax.set_ylabel('Validation Loss', fontsize=12)
+    ax.set_title('Step vs Loss Curves for 10 Latest Speed Runs\n(All individual runs shown)',
+                 fontsize=14, pad=20)
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+    ax.grid(True, alpha=0.3)
+    # Limit x-axis to focus on typical speedruns (ignore very long outliers)
+    final_steps_per_speedrun_top10 = df_top10.groupby('speedrun')['step'].max()
+    typical_max_step_top10 = final_steps_per_speedrun_top10.quantile(0.75)
+    ax.set_xlim(0, typical_max_step_top10 * 1.1)
+    ax.set_ylim(3.0, 11)
+
+    plt.tight_layout()
+    output_plot_top10 = "/home/user/modded-nanogpt/speedrun_plot_top10.png"
+    plt.savefig(output_plot_top10, dpi=150, bbox_inches='tight')
+    print(f"Full plot (top 10) saved to: {output_plot_top10}")
+    plt.close()
+
+    # Plot 4: Zoomed view - Latest 10 speedruns only
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    # Find the zoom range using 75th percentile for top 10
+    min_step_zoom_top10 = typical_max_step_top10 * 0.7
+
+    # Plot each run (plot full data, zoom with axis limits)
+    for i, speedrun in enumerate(speedruns_top10):
+        speedrun_data = df_top10[df_top10['speedrun'] == speedrun]
+
+        # Get all unique runs for this speedrun
+        run_ids = speedrun_data['run_id'].unique()
+
+        for j, run_id in enumerate(run_ids):
+            run_data = speedrun_data[speedrun_data['run_id'] == run_id].sort_values('step')
+            # Add label only to first run of each speedrun for legend
+            label = speedrun if j == 0 else None
+            ax.plot(run_data['step'], run_data['val_loss'],
+                   color=colors_top10[i], alpha=0.25, linewidth=1.2, label=label)
+
+    ax.set_xlabel('Training Step', fontsize=12)
+    ax.set_ylabel('Validation Loss', fontsize=12)
+    ax.set_title('Step vs Loss Curves - Last 30% of Training (Zoomed, 10 Latest)\n(All individual runs shown)',
+                 fontsize=14, pad=20)
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+    ax.grid(True, alpha=0.3)
+    # Set x-axis limits to focus on typical runs
+    ax.set_xlim(min_step_zoom_top10, typical_max_step_top10 * 1.05)
+    # Set y-axis limits to focus on the critical convergence region
+    ax.set_ylim(3.27, 3.46)
+
+    plt.tight_layout()
+    output_plot_zoom_top10 = "/home/user/modded-nanogpt/speedrun_plot_zoomed_top10.png"
+    plt.savefig(output_plot_zoom_top10, dpi=150, bbox_inches='tight')
+    print(f"Zoomed plot (top 10) saved to: {output_plot_zoom_top10}")
     plt.close()
 
     # Calculate variance statistics
