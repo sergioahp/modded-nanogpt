@@ -88,8 +88,8 @@ def get_commit_info(speedrun_dir):
 def main():
     print("Loading speed run data...")
 
-    # Get 15 latest speed runs
-    latest_speedruns = get_latest_speedruns(15)
+    # Get 10 latest speed runs
+    latest_speedruns = get_latest_speedruns(10)
 
     print(f"\nFound {len(latest_speedruns)} latest speed runs:")
     for i, sr in enumerate(latest_speedruns):
